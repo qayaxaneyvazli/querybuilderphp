@@ -64,7 +64,7 @@ function main()
             'age' => 30,
             'status' => 'not active'
         ]);
-        echo "INSERT Sonucu: Eklenen kullanıcı ID: $newUserId\n";
+        echo "INSERT Result: Added user ID: $newUserId\n";
 
         $youngUserId = insertUser($queryBuilder, $connection, [
             'name' => 'Young User',
@@ -76,22 +76,22 @@ function main()
         // Select users
         $users = selectUsers($queryBuilder, 18, 10);
           
-        echo "SELECT Sonuçları:\n";
+        echo "SELECT Results:\n";
         foreach ($users as $user) {
             echo "ID: {$user['id']}, Name: {$user['name']}, Email: {$user['email']}\n";
         }
 
         // Update user status
         $updatedRows = updateUserStatus($queryBuilder, $newUserId, 'active');
-        echo "UPDATE Sonucu: Güncellenen satır sayısı: $updatedRows\n";
+        echo "UPDATE Result: Updated column counts: $updatedRows\n";
 
         // Delete young users
         $deletedRows = deleteYoungUsers($queryBuilder, 30);
        
-        echo "DELETE Sonucu: Silinen satır sayısı: $deletedRows\n";
+        echo "DELETE Result: Deleted column counts: $deletedRows\n";
 
     } catch (Exception $e) {
-        echo "Bir hata oluştu: " . $e->getMessage() . "\n";
+        echo "An error occurred: " . $e->getMessage() . "\n";
     }
 }
 

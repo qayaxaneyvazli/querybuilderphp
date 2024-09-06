@@ -18,7 +18,7 @@ class QueryBuilder implements QueryBuilderInterface
     private int $offset = 0;
     private array $orderBy = [];
 
-    private $queryType = 'SELECT';
+    private string $queryType = 'SELECT'; 
 
     public function __construct(private ConnectionInterface $connection)
     {
@@ -29,6 +29,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function select(array $columns = ['*']): self
     {
         $this->columns = $columns;
+        $this->queryType = 'SELECT';
         return $this;
     }
 
@@ -75,6 +76,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function insertInto(string $table): self
     {
         $this->table = $table;
+        $this->queryType = 'INSERT';
         return $this;
     }
     public function values(array $values): self
@@ -86,6 +88,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function update(string $table): self
     {
         $this->table = $table;
+        $this->queryType = 'UPDATE';
         return $this;
     }
     public function set(array $sets): self
@@ -96,6 +99,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function deleteFrom(string $table): self
     {
         $this->table = $table;
+        $this->queryType = 'DELETE';
         return $this;
     }
 
@@ -105,14 +109,16 @@ class QueryBuilder implements QueryBuilderInterface
             throw new QueryBuilderException("Table name is required");
         }
 
-        if (!empty($this->values)) {
-            return $this->buildInsertQuery();
-        } elseif (!empty($this->sets)) {
-            return $this->buildUpdateQuery();
-        } elseif (empty($this->columns)) {
-            return $this->buildDeleteQuery();
-        } else {
-            return $this->buildSelectQuery();
+        switch ($this->queryType) {
+            case 'INSERT':
+                return $this->buildInsertQuery();
+            case 'UPDATE':
+                return $this->buildUpdateQuery();
+            case 'DELETE':
+                return $this->buildDeleteQuery();
+            case 'SELECT':
+            default:
+                return $this->buildSelectQuery();
         }
     }
 
@@ -197,27 +203,23 @@ class QueryBuilder implements QueryBuilderInterface
         $params = $this->getParams();
 
         // Hata ayıklama için loglar
-        error_log("Executing query: " . $query);
+        error_log("Executing {$this->queryType} query: " . $query);
         error_log("Parameters: " . print_r($params, true));
 
         try {
             $result = $this->connection->execute($query, $params);
             
-            // DELETE sorgusu için özel işlem
-            if (stripos($query, 'DELETE') === 0) {
-                return $result; // PDOStatement döndür
+            // Etkilenen satır sayısını loglayalım
+            if ($result instanceof \PDOStatement) {
+                error_log("Affected rows: " . $result->rowCount());
             }
-
-            return $result;
         } catch (\PDOException $e) {
-            // Hata durumunda daha fazla bilgi logla
-            error_log("Error executing query: " . $e->getMessage());
-            error_log("Query: " . $query);
-            error_log("Parameters: " . print_r($params, true));
+            
             throw $e;
-        } finally {
-            $this->reset();
         }
+
+        $this->reset();
+        return $result;
     }
 
 
@@ -249,5 +251,6 @@ class QueryBuilder implements QueryBuilderInterface
         $this->offset = 0;
         $this->values = [];
         $this->sets = [];
+        $this->queryType = 'SELECT'; 
     }
 }
