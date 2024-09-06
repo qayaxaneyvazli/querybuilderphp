@@ -9,6 +9,7 @@ use QueryBuilder\Clauses\WhereClause;
 use QueryBuilder\Clauses\OrderByClause;
 use QueryBuilder\Connections\PDOConnection;
 
+
 class QueryBuilder implements QueryBuilderInterface
 {
     private array $columns = ['*'];
