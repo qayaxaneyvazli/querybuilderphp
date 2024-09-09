@@ -203,14 +203,14 @@ class QueryBuilder implements QueryBuilderInterface
         $query = $this->getQuery();
         $params = $this->getParams();
 
-        // Hata ayıklama için loglar
+         
         error_log("Executing {$this->queryType} query: " . $query);
         error_log("Parameters: " . print_r($params, true));
 
         try {
             $result = $this->connection->execute($query, $params);
             
-            // Etkilenen satır sayısını loglayalım
+            
             if ($result instanceof \PDOStatement) {
                 error_log("Affected rows: " . $result->rowCount());
             }
